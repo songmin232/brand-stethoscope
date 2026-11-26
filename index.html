@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>브랜드 청진기 — 로고·패키지 진단</title>
+<meta name="description" content="로고·패키지 이미지를 올리면 가독성, 색 대비, 정보 위계, 일관성, 업종 적합성을 진단하고 개선 포인트를 알려 주는 웹앱 시제품">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f5f3ee; --card:#ffffff; --ink:#1c1f24; --sub:#5d6371; --line:#e4e0d6;
+  --brand:#1f5c4a; --brand-soft:#e7f1ec; --accent:#e0893a;
+  --good:#1f7a4d; --mid:#b7791f; --bad:#c0392b;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6;word-break:keep-all;overflow-wrap:anywhere;
+  font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header{background:var(--brand);color:#fff;padding:28px 0 26px}
+header .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.5rem;letter-spacing:-.02em}
+header .logo svg{flex:none}
+header p{margin:6px 0 0;opacity:.9}
+main{padding:20px 0 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+h2{font-size:1.15rem;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+h2 .step{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;font-size:.85rem}
+h3{font-size:1rem;margin:0 0 10px}
+.muted{color:var(--sub);font-size:.9rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+
+/* 업로드 */
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;
+  min-height:210px;border:2px dashed #c8c2b4;border-radius:14px;background:#fbfaf7;cursor:pointer;padding:18px;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft)}
+.drop img{max-width:100%;max-height:260px;border-radius:8px;object-fit:contain}
+.drop strong{font-size:1.02rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.samples{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px;background:#fff1de;color:#9a5a12;border:1px solid #f1d3a8}
+
+.field{margin-bottom:16px}
+.field > label,.field > .label{display:block;font-weight:700;margin-bottom:6px;font-size:.95rem}
+select{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chip span{display:inline-block;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:#fff;font-size:.92rem;cursor:pointer;user-select:none}
+.chip input:checked + span{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip input:focus-visible + span{outline:3px solid #9cc9b8;outline-offset:2px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:13px 18px;cursor:pointer;background:var(--brand);color:#fff;min-height:48px}
+.btn:disabled{background:#a9b5b0;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.small{padding:8px 12px;min-height:38px;font-size:.88rem}
+.btn.block{width:100%}
+.notice{font-size:.82rem;color:var(--sub);margin:10px 0 0}
+
+/* 결과 */
+#result{display:none}
+.summary{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.score-ring{--p:0;--c:var(--good);width:112px;height:112px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:conic-gradient(var(--c) calc(var(--p)*1%), #ece8df 0)}
+.score-ring div{width:88px;height:88px;border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center;line-height:1.1}
+.score-ring b{font-size:1.9rem}
+.score-ring small{display:block;font-size:.75rem;color:var(--sub)}
+.summary .line{font-size:1.15rem;font-weight:800;margin:0 0 4px}
+.meta{font-size:.85rem;color:var(--sub)}
+.imgbox{position:relative;background:#f1eee7;border-radius:12px;padding:8px}
+.imgbox canvas{width:100%;height:auto;display:block;border-radius:8px}
+.legend{list-style:none;padding:0;margin:10px 0 0;font-size:.88rem}
+.legend li{display:flex;gap:8px;align-items:flex-start;margin-bottom:4px}
+.legend i{flex:none;width:20px;height:20px;border-radius:50%;color:#fff;font-style:normal;font-size:.75rem;font-weight:800;display:grid;place-items:center;margin-top:1px}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar-row .top{display:flex;justify-content:space-between;gap:8px;font-size:.93rem}
+.bar-row .top b{font-weight:700}
+.bar{height:10px;background:#ece8df;border-radius:99px;overflow:hidden;margin:4px 0 2px}
+.bar > div{height:100%;border-radius:99px}
+.bar-row .why{font-size:.8rem;color:var(--sub)}
+.grade{font-size:.75rem;font-weight:800;padding:1px 8px;border-radius:99px;color:#fff;margin-left:6px;white-space:nowrap}
+.g-good{background:var(--good)} .g-mid{background:var(--mid)} .g-bad{background:var(--bad)}
+.fixes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:860px){.fixes{grid-template-columns:1fr}}
+.fix{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fcfbf8}
+.fix .rank{font-size:.8rem;font-weight:800;color:var(--accent)}
+.fix h4{margin:2px 0 10px;font-size:1rem}
+.fix dl{margin:0;font-size:.9rem}
+.fix dt{font-weight:800;font-size:.78rem;color:var(--sub);margin-top:8px}
+.fix dd{margin:2px 0 0}
+.swatches{display:flex;gap:6px;margin-top:6px}
+.swatches span{width:22px;height:22px;border-radius:6px;border:1px solid rgba(0,0,0,.12)}
+.previews{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end}
+.previews figure{margin:0;text-align:center}
+.previews figcaption{font-size:.8rem;color:var(--sub);margin-top:6px}
+.previews canvas{display:block;margin:0 auto;border:1px solid var(--line);border-radius:6px;background:#fff}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.disclaimer{background:#fff8ec;border:1px solid #f1dcb5;border-radius:12px;padding:12px 14px;font-size:.85rem;color:#6b4e1d;margin-top:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1c1f24;color:#fff;padding:10px 16px;border-radius:10px;font-size:.9rem;opacity:0;transition:.25s;pointer-events:none;z-index:10;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{font-size:.8rem;color:var(--sub);padding:0 0 32px}
+.print-only{display:none}
+@media print{
+  body{background:#fff}
+  header{background:#fff;color:#000;padding:0 0 8px;border-bottom:2px solid #000}
+  .no-print{display:none!important}
+  .card{break-inside:avoid;border-color:#bbb}
+  .print-only{display:block}
+  .fixes{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#fff" opacity=".15"/><path d="M10 7v8a7 7 0 0 0 14 0V7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M17 22v3a4 4 0 0 0 8 0" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="25" cy="25" r="3" fill="#e0893a"/></svg>
+      브랜드 청진기
+    </div>
+    <p>로고·패키지 사진 한 장으로 <b>무엇이, 왜 문제인지</b> 먼저 확인해 보세요.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- 입력 화면 -->
+  <section class="card no-print" aria-labelledby="in-title">
+    <h2 id="in-title"><span class="step">1</span>진단할 이미지와 기본 정보</h2>
+    <div class="grid2">
+      <div>
+        <label class="drop" id="drop" for="file">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1f5c4a" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>
+          <strong>이미지를 끌어 놓거나 눌러서 선택</strong>
+          <span class="muted">휴대폰에서는 바로 촬영할 수 있어요 · JPG, PNG, WEBP</span>
+        </label>
+        <input class="sr" type="file" id="file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <div class="samples">
+          <span class="muted">이미지가 없다면</span>
+          <button type="button" class="btn ghost small" data-sample="pkg">샘플 패키지로 체험</button>
+          <button type="button" class="btn ghost small" data-sample="logo">샘플 로고로 체험</button>
+        </div>
+        <p class="notice">샘플은 팀이 만든 <b>가상 브랜드(샘플 데이터)</b>이며 실제 기업 작업물이 아닙니다.</p>
+      </div>
+
+      <div>
+        <div class="field">
+          <span class="label" id="lbl-type">종류</span>
+          <div class="chips" role="radiogroup" aria-labelledby="lbl-type">
+            <label class="chip"><input type="radio" name="type" value="logo"><span>로고</span></label>
+            <label class="chip"><input type="radio" name="type" value="package" checked><span>패키지</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="industry">업종</label>
+          <select id="industry">
+            <option value="manufacturing">제조·기술</option>
+            <option value="food" selected>농식품</option>
+            <option value="beauty">뷰티·생활</option>
+            <option value="medical">의료</option>
+            <option value="etc">기타</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="label" id="lbl-ch">주요 판매 채널</span>
+          <div class="chips" role="radiogroup" aria-labelledby="lbl-ch">
+            <label class="chip"><input type="radio" name="channel" value="online" checked><span>온라인</span></label>
+            <label class="chip"><input type="radio" name="channel" value="mart"><span>마트</span></label>
+            <label class="chip"><input type="radio" name="channel" value="market"><span>시장</span></label>
+            <label class="chip"><input type="radio" name="channel" value="b2b"><span>B2B</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="lbl-mood">원하는 인상 <span class="muted">(최대 3개, 안 고르면 업종 기본값)</span></span>
+          <div class="chips" id="moods" aria-labelledby="lbl-mood"></div>
+        </div>
+        <button class="btn block" id="go" disabled>진단하기</button>
+        <p class="notice">🔒 이미지는 이 기기의 브라우저 안에서만 분석되며 서버로 보내거나 저장하지 않아요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 결과 화면 -->
+  <section id="result" aria-live="polite">
+    <div class="print-only"><h2>브랜드 청진기 진단 리포트</h2></div>
+
+    <div class="card">
+      <div class="summary">
+        <div class="score-ring" id="ring"><div><span><b id="total">0</b><small>종합 점수</small></span></div></div>
+        <div style="flex:1;min-width:220px">
+          <p class="line" id="oneline"></p>
+          <p class="meta" id="meta"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">2</span>어디가 문제일까요?</h2>
+      <div class="grid2">
+        <div>
+          <div class="imgbox"><canvas id="view"></canvas></div>
+          <ul class="legend" id="legend"></ul>
+        </div>
+        <div>
+          <h3>항목별 점수</h3>
+          <div class="bars" id="bars"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">3</span>개선 포인트 (우선순위 순)</h2>
+      <div class="fixes" id="fixes"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">4</span>이렇게 보여요</h2>
+      <div class="previews" id="previews"></div>
+      <p class="notice">실제 크기 미리보기는 화면 확대율에 따라 조금 다르게 보일 수 있어요.</p>
+    </div>
+
+    <div class="card">
+      <div class="actions no-print">
+        <button class="btn" id="pdf">리포트 저장(PDF)</button>
+        <button class="btn ghost" id="copy">디자이너 상담용 요약 복사</button>
+        <button class="btn ghost" id="again">다른 이미지 진단</button>
+      </div>
+      <div class="disclaimer">
+        ⚠️ AI 진단은 참고용이며 전문 디자이너 검토를 대신하지 않습니다.
+        이 시제품은 이미지의 색·명암·배치를 계산하는 <b>규칙 기반 분석</b>이고, 점수 기준은 디자인 전문가 검토 전 <b>[가설]</b> 단계예요.
+        서체 종류, 문구 내용, 식품 표시사항은 자동으로 판단하지 않습니다.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  2026 NI2.0 AID 해커톤 · 2팀 뭉치스(계명문화대학교 디자인융합학부) · ㈜디엔비 연계 과제 시제품 v0.1
+</footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ===================== 설정값 ([가설] 기준값 — 디자이너 검토 필요) ===================== */
+const MOODS = {
+  "신뢰":     {hues:[[190,240]], sat:[0.3,0.9], light:[0.18,0.5], tip:"남색·파랑 계열의 차분한 색", sw:["#1b3a6b","#2f6fb3","#dfe8f3"]},
+  "친근":     {hues:[[15,60],[80,140]], sat:[0.4,0.9], light:[0.45,0.75], tip:"따뜻한 주황·노랑이나 밝은 연두", sw:["#f0a04b","#f6d365","#8cc06b"]},
+  "프리미엄": {hues:null, sat:[0,0.35], light:[0.05,0.35], tip:"채도를 낮춘 짙은 색 + 금색 포인트", sw:["#1d1d1f","#3a3a3c","#b8975a"]},
+  "자연·건강":{hues:[[70,160],[20,40]], sat:[0.25,0.7], light:[0.28,0.6], tip:"초록·흙색 계열, 채도는 중간", sw:["#4f7a3a","#8aa85a","#a4784a"]},
+  "활기":     {hues:[[0,50],[300,360]], sat:[0.65,1], light:[0.4,0.65], tip:"선명한 빨강·주황 계열", sw:["#e63b2e","#ff7a1a","#ffd23f"]},
+  "깔끔":     {hues:null, sat:[0,0.5], light:[0.5,0.97], tip:"흰 여백 + 채도 낮은 한 가지 색", sw:["#ffffff","#e9eef2","#5b7a8c"]},
+  "전통":     {hues:[[0,45],[340,360]], sat:[0.3,0.75], light:[0.2,0.45], tip:"깊은 적색·갈색, 한지 같은 미색 배경", sw:["#8e2a22","#6b4226","#f1e6cf"]},
+  "귀여움":   {hues:[[300,360],[0,20],[40,60],[170,200]], sat:[0.4,0.85], light:[0.6,0.85], tip:"밝은 분홍·노랑·하늘색 파스텔", sw:["#f7a6c1","#ffe08a","#9ad9e8"]}
+};
+const INDUSTRY = {
+  manufacturing:{name:"제조·기술", moods:["신뢰"]},
+  food:{name:"농식품", moods:["자연·건강","친근"]},
+  beauty:{name:"뷰티·생활", moods:["깔끔","프리미엄"]},
+  medical:{name:"의료", moods:["신뢰","깔끔"]},
+  etc:{name:"기타", moods:["친근"]}
+};
+const CHANNEL = {online:"온라인", mart:"마트", market:"시장", b2b:"B2B"};
+// 작은 크기 테스트 폭(px): 로고는 명함·파비콘, 패키지는 채널별 썸네일·매대 거리 가정
+const SMALL_W = {logo:40, online:72, mart:96, market:96, b2b:120};
+
+/* ===================== 상태 ===================== */
+const $ = s => document.querySelector(s);
+const state = {img:null, isSample:false, label:"", result:null};
+
+/* ===================== 입력 화면 ===================== */
+const moodBox = $("#moods");
+Object.keys(MOODS).forEach(m=>{
+  const l=document.createElement("label");l.className="chip";
+  l.innerHTML=`<input type="checkbox" value="${m}"><span>${m}</span>`;
+  moodBox.appendChild(l);
+});
+moodBox.addEventListener("change",e=>{
+  const on=[...moodBox.querySelectorAll("input:checked")];
+  if(on.length>3){e.target.checked=false;toast("원하는 인상은 최대 3개까지 고를 수 있어요");}
+});
+
+const drop=$("#drop"), fileIn=$("#file");
+fileIn.addEventListener("change",()=>{ if(fileIn.files[0]) loadFile(fileIn.files[0]); });
+["dragenter","dragover"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add("over");}));
+["dragleave","drop"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove("over");}));
+drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0]; if(f) loadFile(f);});
+
+function loadFile(f){
+  if(!/^image\//.test(f.type)){toast("이미지 파일(JPG, PNG, WEBP)만 올릴 수 있어요");return;}
+  if(f.size>15*1024*1024){toast("15MB 이하 이미지를 올려 주세요");return;}
+  const url=URL.createObjectURL(f);
+  setImage(url,false,f.name);
+}
+function setImage(src,isSample,label){
+  const img=new Image();
+  img.onload=()=>{
+    state.img=img;state.isSample=isSample;state.label=label;
+    drop.innerHTML="";
+    const p=img.cloneNode();p.alt="업로드한 이미지 미리보기";drop.appendChild(p);
+    const s=document.createElement("span");s.className="muted";
+    s.innerHTML=(isSample?'<span class="tag">샘플 데이터</span> ':"")+escapeHtml(label)+" · 다시 누르면 바꿀 수 있어요";
+    drop.appendChild(s);
+    $("#go").disabled=false;
+  };
+  img.onerror=()=>toast("이미지를 열 수 없어요. 다른 파일로 시도해 주세요 (HEIC는 지원하지 않아요)");
+  img.src=src;
+}
+document.querySelectorAll("[data-sample]").forEach(b=>b.addEventListener("click",()=>{
+  const kind=b.dataset.sample;
+  setImage(makeSample(kind),true,kind==="pkg"?"가상 브랜드 ‘햇살농원 사과즙’":"가상 브랜드 ‘가온테크’");
+  document.querySelector(`input[name=type][value=${kind==="pkg"?"package":"logo"}]`).checked=true;
+  $("#industry").value=kind==="pkg"?"food":"manufacturing";
+}));
+
+$("#go").addEventListener("click",()=>{
+  if(!state.img) return;
+  const opt={
+    type:document.querySelector("input[name=type]:checked").value,
+    industry:$("#industry").value,
+    channel:document.querySelector("input[name=channel]:checked").value,
+    moods:[...moodBox.querySelectorAll("input:checked")].map(i=>i.value)
+  };
+  opt.moodsUsed = opt.moods.length?opt.moods:INDUSTRY[opt.industry].moods;
+  opt.moodsDefault = !opt.moods.length;
+  try{
+    const r=analyze(state.img,opt);
+    state.result=r;
+    render(r,opt);
+  }catch(err){console.error(err);toast("분석 중 문제가 생겼어요. 다른 이미지로 시도해 주세요");}
+});
+
+/* ===================== 색 계산 도구 ===================== */
+const LIN=new Float32Array(256);for(let i=0;i<256;i++){const c=i/255;LIN[i]=c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);}
+const relLum=(r,g,b)=>0.2126*LIN[r|0]+0.7152*LIN[g|0]+0.0722*LIN[b|0];
+const Lstar=Y=>Y>0.008856?116*Math.cbrt(Y)-16:903.3*Y;
+const contrast=(a,b)=>(Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+function rgbToLab(r,g,b){
+  const R=LIN[Math.round(r)],G=LIN[Math.round(g)],B=LIN[Math.round(b)];
+  let x=(R*0.4124+G*0.3576+B*0.1805)/0.95047,y=R*0.2126+G*0.7152+B*0.0722,z=(R*0.0193+G*0.1192+B*0.9505)/1.08883;
+  const f=t=>t>0.008856?Math.cbrt(t):7.787*t+16/116;x=f(x);y=f(y);z=f(z);
+  return [116*y-16,500*(x-y),200*(y-z)];
+}
+const labDist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0;const l=(mx+mn)/2;
+  if(mx!==mn){const d=mx-mn;s=l>0.5?d/(2-mx-mn):d/(mx+mn);
+    if(mx===r)h=(g-b)/d+(g<b?6:0);else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;}
+  return [h,s,l];}
+const toHex=c=>"#"+c.map(v=>Math.round(v).toString(16).padStart(2,"0")).join("");
+function lerp(x,pts){if(x<=pts[0][0])return pts[0][1];for(let i=1;i<pts.length;i++){if(x<=pts[i][0]){const[x0,y0]=pts[i-1],[x1,y1]=pts[i];return y0+(y1-y0)*(x-x0)/(x1-x0);}}return pts[pts.length-1][1];}
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+function gini(arr){const v=[...arr].sort((a,b)=>a-b),n=v.length,s=v.reduce((a,b)=>a+b,0);if(!s)return 0;let w=0;v.forEach((x,i)=>w+=(i+1)*x);return (2*w)/(n*s)-(n+1)/n;}
+function rangeDist(v,[a,b]){return v>=a&&v<=b?0:Math.min(Math.abs(v-a),Math.abs(v-b));}
+function hueDist(h,[a,b]){if(h>=a&&h<=b)return 0;const d=x=>{const t=Math.abs(h-x)%360;return t>180?360-t:t;};return Math.min(d(a),d(b));}
+
+/* ===================== 진단 (기능 1) ===================== */
+function analyze(img,opt){
+  const MAX=360, sc=Math.min(1,MAX/Math.max(img.naturalWidth,img.naturalHeight));
+  const W=Math.max(24,Math.round(img.naturalWidth*sc)), H=Math.max(24,Math.round(img.naturalHeight*sc)), N=W*H;
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const cx=cv.getContext("2d",{willReadFrequently:true});
+  cx.fillStyle="#fff";cx.fillRect(0,0,W,H);cx.imageSmoothingQuality="high";cx.drawImage(img,0,0,W,H);
+  const d=cx.getImageData(0,0,W,H).data;
+
+  // 1) 색 묶기 (4bit 양자화 → Lab 거리로 군집)
+  const cnt=new Uint32Array(4096), sr=new Float64Array(4096), sg=new Float64Array(4096), sb=new Float64Array(4096);
+  const pixBin=new Uint16Array(N), L=new Float32Array(N);
+  for(let i=0;i<N;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];const k=((r>>4)<<8)|((g>>4)<<4)|(b>>4);
+    pixBin[i]=k;cnt[k]++;sr[k]+=r;sg[k]+=g;sb[k]+=b;L[i]=Lstar(relLum(r,g,b));}
+  const bins=[];for(let k=0;k<4096;k++)if(cnt[k])bins.push(k);bins.sort((a,b)=>cnt[b]-cnt[a]);
+  const binLab=new Array(4096), binCl=new Int16Array(4096).fill(-1), cl=[];
+  for(const k of bins){const n=cnt[k],lab=rgbToLab(sr[k]/n,sg[k]/n,sb[k]/n);binLab[k]=lab;
+    let best=-1,bd=1e9;for(let c=0;c<cl.length;c++){const dd=labDist(lab,cl[c].seed);if(dd<bd){bd=dd;best=c;}}
+    if(best>=0&&(bd<16||cl.length>=40)){const c=cl[best];c.r+=sr[k];c.g+=sg[k];c.b+=sb[k];c.n+=n;binCl[k]=best;}
+    else{cl.push({seed:lab,r:sr[k],g:sg[k],b:sb[k],n});binCl[k]=cl.length-1;}}
+  cl.forEach((c,i)=>{c.i=i;c.rgb=[c.r/c.n,c.g/c.n,c.b/c.n];c.lab=rgbToLab(...c.rgb);c.share=c.n/N;c.lum=relLum(...c.rgb);c.hsl=rgbToHsl(...c.rgb);c.hex=toHex(c.rgb);});
+
+  // 2) 배경색 = 테두리에서 가장 많은 색
+  const border=new Map();const add=i=>{const c=binCl[pixBin[i]];border.set(c,(border.get(c)||0)+1);};
+  for(let x=0;x<W;x++){add(x);add((H-1)*W+x);}for(let y=0;y<H;y++){add(y*W);add(y*W+W-1);}
+  let bgI=0,bm=-1;border.forEach((v,k)=>{if(v>bm){bm=v;bgI=k;}});const bg=cl[bgI];
+  // 주요 색: 면적 3% 이상, 또는 0.5% 이상이면서 이미 센 색과 뚜렷이 다른 색(작은 포인트 색까지 포함, 경계 번짐 색은 제외)
+  const sig=[];
+  [...cl].sort((a,b)=>b.share-a.share).forEach(c=>{
+    if(c.share>=0.03 && sig.every(s=>labDist(s.lab,c.lab)>14)) sig.push(c);
+    else if(c.share>=0.005 && sig.every(s=>labDist(s.lab,c.lab)>28)) sig.push(c);
+  });
+  if(!sig.includes(bg)) sig.unshift(bg);
+  const fgCl=sig.filter(c=>c.i!==bgI&&labDist(c.lab,bg.lab)>14);
+
+  // 3) 칸(grid) 단위 집계
+  const gx=10, gy=Math.min(16,Math.max(4,Math.round(10*H/W))), cw=W/gx, ch=H/gy;
+  const cells=[];for(let j=0;j<gy;j++)for(let i=0;i<gx;i++)cells.push({i,j,n:0,fg:0,sal:0,loss:0,m:new Map(),s1:0,s2:0,r1:0,r2:0});
+  let fgN=0;
+  for(let y=0;y<H;y++){const cj=Math.min(gy-1,(y/ch)|0);
+    for(let x=0;x<W;x++){const p=y*W+x,k=pixBin[p],c=cells[cj*gx+Math.min(gx-1,(x/cw)|0)];
+      c.n++;const ci=binCl[k];c.m.set(ci,(c.m.get(ci)||0)+1);
+      const dist=labDist(binLab[k],bg.lab);if(dist>14){c.fg++;c.sal+=dist;fgN++;}}}
+  const coverage=fgN/N;
+
+  // 4) 작은 크기 테스트 (축소 → 다시 확대해서 디테일 손실 측정)
+  // 로고는 짧은 변을 기준(명함·아이콘에서 높이 약 40px), 패키지는 채널별 썸네일 폭 기준
+  const sw=opt.type==="logo"?Math.round(SMALL_W.logo*Math.max(1,W/H)):SMALL_W[opt.channel];
+  const sW=Math.max(8,Math.min(W,sw)), sH=Math.max(4,Math.round(sW*H/W));
+  const sm=document.createElement("canvas");sm.width=sW;sm.height=sH;const smx=sm.getContext("2d");
+  smx.imageSmoothingQuality="high";smx.drawImage(cv,0,0,sW,sH);
+  const rc=document.createElement("canvas");rc.width=W;rc.height=H;const rcx=rc.getContext("2d",{willReadFrequently:true});
+  rcx.imageSmoothingQuality="high";rcx.drawImage(sm,0,0,W,H);const rd=rcx.getImageData(0,0,W,H).data;
+  let mean=0;for(let i=0;i<N;i++)mean+=L[i];mean/=N;
+  let vFull=0,vRec=0,meanR=0;const LR=new Float32Array(N);
+  for(let i=0;i<N;i++){LR[i]=Lstar(relLum(rd[i*4],rd[i*4+1],rd[i*4+2]));meanR+=LR[i];}meanR/=N;
+  for(let y=0;y<H;y++){const cj=Math.min(gy-1,(y/ch)|0);for(let x=0;x<W;x++){const p=y*W+x;
+    vFull+=(L[p]-mean)**2;vRec+=(LR[p]-meanR)**2;const c=cells[cj*gx+Math.min(gx-1,(x/cw)|0)];
+    c.loss+=Math.abs(L[p]-LR[p]);c.s1+=L[p];c.s2+=L[p]*L[p];c.r1+=LR[p];c.r2+=LR[p]*LR[p];}}
+  cells.forEach(c=>{c.loss/=c.n;const sf=Math.sqrt(Math.max(0,c.s2/c.n-(c.s1/c.n)**2)),srr=Math.sqrt(Math.max(0,c.r2/c.n-(c.r1/c.n)**2));
+    c.std=sf;c.ret=sf>1e-6?Math.min(1,srr/sf):1;});
+  // 칸마다 디테일 유지율을 따로 재서 평균 → 작은 글자 칸도 큰 그림과 같은 비중으로 반영
+  // 획 굵기 측정: 요소 픽셀마다 가로·세로로 이어진 길이 중 짧은 쪽 = 그 지점의 획 굵기
+  const fgM=new Uint8Array(N);for(let i=0;i<N;i++)fgM[i]=labDist(binLab[pixBin[i]],bg.lab)>14?1:0;
+  const hr=new Uint16Array(N),vr=new Uint16Array(N);
+  for(let y=0;y<H;y++){let x=0;while(x<W){if(!fgM[y*W+x]){x++;continue;}let e=x;while(e<W&&fgM[y*W+e])e++;for(let t=x;t<e;t++)hr[y*W+t]=e-x;x=e;}}
+  for(let x=0;x<W;x++){let y=0;while(y<H){if(!fgM[y*W+x]){y++;continue;}let e=y;while(e<H&&fgM[e*W+x])e++;for(let t=y;t<e;t++)vr[t*W+x]=e-y;y=e;}}
+  const cellT=cells.map(()=>[]);
+  for(let y=0;y<H;y++){const cj=Math.min(gy-1,(y/ch)|0);for(let x=0;x<W;x++){const p=y*W+x;if(fgM[p])cellT[cj*gx+Math.min(gx-1,(x/cw)|0)].push(Math.min(hr[p],vr[p]));}}
+  const med=a=>{const s=[...a].sort((p,q)=>p-q);return s[Math.floor(s.length/2)]||0;};
+  const cellMed=cells.map((c,k)=>c.fg>0.03*c.n&&cellT[k].length>=8?med(cellT[k]):null).filter(v=>v!==null).sort((a,b)=>a-b);
+  const scale=sW/W;
+  const thinPx=cellMed.length?cellMed[Math.floor(cellMed.length*0.25)]*scale:3;   // 가는 쪽(하위 25%) 획
+  const midPx=cellMed.length?cellMed[Math.floor(cellMed.length*0.5)]*scale:3;     // 보통 획
+  const retention=detailCellsRet();
+  function detailCellsRet(){const dc=cells.filter(c=>c.fg>0.03*c.n&&c.std>1.5);return dc.length?dc.reduce((a,c)=>a+c.ret,0)/dc.length:1;}
+
+  // 5) 칸별 국소 대비
+  cells.forEach(c=>{
+    const e=[...c.m.entries()].sort((a,b)=>b[1]-a[1]);c.cr=null;
+    if(!e.length)return;const c0=cl[e[0][0]];
+    for(let t=1;t<e.length;t++){if(e[t][1]<0.05*c.n)break;const c1=cl[e[t][0]];
+      if(labDist(c0.lab,c1.lab)>14){c.cr=contrast(c0.lum,c1.lum);break;}}
+  });
+  const content=cells.filter(c=>c.cr!==null);
+  const goodShare=content.length?content.filter(c=>c.cr>=3).length/content.length:0;
+
+  /* ---- 항목별 점수 ---- */
+  const crScore=cr=>lerp(cr,[[1,5],[1.5,20],[2,40],[3,62],[4.5,82],[7,96],[21,100]]);
+  const items={};
+
+  // 가독성 (작은 크기)
+  {const f=px=>lerp(px,[[0.25,15],[0.5,35],[0.8,55],[1.1,72],[1.6,86],[2.5,96]]);
+    const s=clamp(Math.round(0.6*f(thinPx)+0.4*f(midPx)));
+    const pct=thinPx.toFixed(1);
+    const where=opt.type==="logo"?"명함·앱 아이콘 크기":(opt.channel==="online"?"온라인 썸네일 크기":"매대에서 2~3m 떨어진 거리");
+    items.read={name:"가독성",score:s,metric:`폭 ${sW}px로 줄이면 가는 획 굵기 약 ${pct}px (1px 미만이면 거의 안 보임)`,
+      short:"작은 크기에서 글자·선이 잘 안 읽혀요",
+      problem:`${where}에서 글자·선이 뭉개져요`,
+      reason:`폭 ${sW}px로 줄이면 가는 획이 약 ${pct}px까지 얇아져요. 1px보다 얇은 획, 작은 글자, 촘촘한 장식은 먼저 사라집니다.`,
+      fix:opt.type==="logo"?"브랜드명 획을 더 굵게 하고, 작은 크기용 단순 버전(심볼만 또는 글자만)을 따로 만드세요.":"제품명·브랜드명을 더 크고 굵게, 가는 장식선과 작은 문구는 줄이거나 뒷면으로 옮기세요.",
+      good:"작은 크기에서도 형태가 잘 유지돼요"};}
+
+  // 색 대비
+  {let mainCr=1,minCr=1;
+    if(fgCl.length){mainCr=contrast(fgCl[0].lum,bg.lum);minCr=Math.min(...fgCl.map(c=>contrast(c.lum,bg.lum)));}
+    const s=fgCl.length?clamp(Math.round(0.45*crScore(mainCr)+0.2*crScore(minCr)+0.35*(goodShare*100))):25;
+    items.contrast={name:"색 대비",score:s,metric:fgCl.length?`주요 색 대비 ${mainCr.toFixed(1)}:1 · 가장 약한 대비 ${minCr.toFixed(1)}:1 (권장 4.5:1 이상)`:"배경과 구분되는 요소를 거의 찾지 못했어요",
+      short:"배경과 글자 색이 비슷해 잘 안 보여요",
+      problem:"배경과 글자·그림의 밝기 차이가 작아요",
+      reason:`가장 약한 곳의 대비가 ${minCr.toFixed(1)}:1이에요. 3:1보다 낮으면 매장 조명이나 휴대폰 화면에서 쉽게 묻힙니다.`,
+      fix:"밝은 배경에는 진한 글자, 어두운 배경에는 밝은 글자로 밝기 차이를 크게 두세요. 같은 밝기의 색끼리(예: 베이지 위 연노랑)는 피하세요.",
+      good:"배경과 글자가 또렷하게 구분돼요",mainCr,minCr};}
+
+  // 정보 위계
+  {const g=gini(cells.map(c=>c.sal));
+    // 시선을 끄는 칸(상위 60%)이 몇 덩어리로 흩어져 있는지 → 덩어리가 많을수록 시선이 분산
+    const tot=cells.reduce((a,c)=>a+c.sal,0);const order=cells.map((c,k)=>k).sort((a,b)=>cells[b].sal-cells[a].sal);
+    const top=new Set();let acc=0;for(const k of order){if(acc>=0.6*tot||cells[k].sal<=0)break;top.add(k);acc+=cells[k].sal;}
+    let groups=0;const vis=new Set();
+    top.forEach(k=>{if(vis.has(k))return;groups++;const q=[k];vis.add(k);while(q.length){const t=q.pop(),ci=t%gx,cj=(t/gx)|0;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const ni=ci+dx,nj=cj+dy;if(ni<0||nj<0||ni>=gx||nj>=gy)continue;const nk=nj*gx+ni;if(top.has(nk)&&!vis.has(nk)){vis.add(nk);q.push(nk);}}}});
+    let s=0.6*lerp(groups,[[1,94],[2,86],[3,72],[4,60],[5,48],[7,32]])+0.4*lerp(g,[[0.15,30],[0.3,52],[0.45,72],[0.6,88],[0.85,95]]);
+    let crowd=false;if(coverage>0.6){s-=Math.min(25,(coverage-0.6)*80);crowd=true;}
+    if(coverage<0.015)s=Math.min(s,40);
+    s=clamp(Math.round(s));
+    items.hier={name:"정보 위계",score:s,metric:`눈에 띄는 요소 ${groups}곳으로 분산 · 요소가 차지한 면적 ${Math.round(coverage*100)}%`,
+      short:crowd?"요소가 꽉 차서 여백이 부족해요":"무엇을 먼저 봐야 할지 한눈에 안 들어와요",
+      problem:crowd?"요소가 화면을 가득 채워 숨 쉴 여백이 없어요":"모든 요소가 비슷한 크기·세기로 흩어져 있어요",
+      reason:crowd?`요소가 면적의 ${Math.round(coverage*100)}%를 차지해요. 여백이 없으면 제품명이 묻혀요.`:`눈에 띄는 요소가 ${groups}곳으로 나뉘어 있어요. 시선이 머무는 중심이 약하면 고객은 2~3초 안에 제품을 이해하지 못하고 지나칩니다.`,
+      fix:opt.type==="logo"?"심볼과 브랜드명 중 하나를 주인공으로 정하고, 나머지는 작게 보조로 두세요.":"‘제품명 → 핵심 특징 1개 → 용량·원산지’ 순서로 크기 차이를 분명히 두고 나머지는 덜어 내세요.",
+      good:"시선이 먼저 가는 중심이 분명해요"};}
+
+  // 일관성 (색 수)
+  {const n=Math.max(1,sig.length);const s=clamp(Math.round(lerp(n,[[2,96],[3,92],[4,80],[5,66],[6,52],[8,36],[12,25]])));
+    items.consist={name:"일관성",score:s,metric:`주요 색 ${n}개 사용 (3개 이하 권장) · 서체 수는 직접 확인`,
+      short:"색이 많아 브랜드 인상이 흩어져요",
+      problem:`주요 색이 ${n}개로 많아요`,
+      reason:"색이 많으면 ‘이 브랜드 색’이 기억되지 않고, 매대에서 다른 제품과 섞여 보여요.",
+      fix:"주색 1개 + 보조색 1~2개로 줄이세요. 서체도 2종 이내로 정리하면 더 단정해져요.",
+      good:"색 사용이 절제되어 인상이 한결같아요",colors:sig.slice(0,6).map(c=>c.hex)};}
+
+  // 업종 적합성
+  {const brand=sig.filter(c=>c.hsl[1]>=0.15&&c.hsl[2]>0.08&&c.hsl[2]<0.92).slice(0,3);
+    const per=opt.moodsUsed.map(m=>{const p=MOODS[m];
+      if(!brand.length){return {m,score:(p.hues===null)?75:40};}
+      let best=0;brand.forEach(c=>{const[h,s,l]=c.hsl;
+        const hs=p.hues?Math.max(0,1-Math.min(...p.hues.map(r=>hueDist(h,r)))/40):1;
+        const ss=Math.max(0,1-rangeDist(s,p.sat)/0.25), ls=Math.max(0,1-rangeDist(l,p.light)/0.25);
+        const v=p.hues?0.5*hs+0.25*ss+0.25*ls:0.5*ss+0.5*ls;best=Math.max(best,v*100);});
+      return {m,score:best};});
+    const s=clamp(Math.round(per.reduce((a,b)=>a+b.score,0)/per.length));
+    const weak=per.filter(x=>x.score<60).map(x=>x.m);
+    const main=brand[0]||bg;
+    const target=(weak[0]||opt.moodsUsed[0]);
+    items.fit={name:"업종 적합성",score:s,
+      metric:`원하는 인상: ${opt.moodsUsed.join("·")}${opt.moodsDefault?"(업종 기본값)":""} · 대표 색 ${main.hex}`,
+      short:`대표 색이 원하는 인상(${target})과 거리가 있어요`,
+      problem:`대표 색이 ‘${weak.length?weak.join("·"):opt.moodsUsed.join("·")}’ 인상과 잘 맞지 않아요`,
+      reason:`${INDUSTRY[opt.industry].name} 고객은 색으로 먼저 제품 성격을 짐작해요. 지금 대표 색(${main.hex})은 원하는 인상과 색상·채도·밝기 차이가 있어요.`,
+      fix:`‘${target}’ 인상을 원한다면 ${MOODS[target].tip}을 대표 색으로 검토해 보세요.`,
+      good:"대표 색이 원하는 인상과 잘 어울려요",swatches:MOODS[target].sw,mainHex:main.hex};}
+
+  // 5) 문제 위치 표시 (인접 칸 묶기)
+  const flag=new Array(cells.length).fill(null);
+  cells.forEach((c,idx)=>{
+    if(c.cr!==null&&c.cr<2.5&&c.fg>0.04*c.n)flag[idx]="contrast";
+    else if(c.loss>11&&c.fg>0.05*c.n&&items.read.score<85)flag[idx]="blur";
+  });
+  const seen=new Array(cells.length).fill(false),regions=[];
+  for(let idx=0;idx<cells.length;idx++){if(!flag[idx]||seen[idx])continue;
+    const type=flag[idx],q=[idx];seen[idx]=true;let x0=1e9,y0=1e9,x1=-1,y1=-1,n=0,sev=0;
+    while(q.length){const k=q.pop(),c=cells[k];n++;x0=Math.min(x0,c.i);y0=Math.min(y0,c.j);x1=Math.max(x1,c.i);y1=Math.max(y1,c.j);
+      sev+=type==="contrast"?(3-c.cr):c.loss;
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const ni=c.i+dx,nj=c.j+dy;if(ni<0||nj<0||ni>=gx||nj>=gy)return;const nk=nj*gx+ni;if(!seen[nk]&&flag[nk]===type){seen[nk]=true;q.push(nk);}});}
+    regions.push({type,x:x0/gx,y:y0/gy,w:(x1-x0+1)/gx,h:(y1-y0+1)/gy,n,sev});}
+  regions.sort((a,b)=>b.sev-a.sev);
+
+  const list=[items.read,items.contrast,items.hier,items.consist,items.fit];
+  const total=Math.round(list.reduce((a,b)=>a+b.score,0)/list.length);
+  return {items,list,total,regions:regions.slice(0,4),bg,size:{w:img.naturalWidth,h:img.naturalHeight},smallW:sW};
+}
+
+/* ===================== 리포트 (기능 2) ===================== */
+const gradeOf=s=>s>=80?["좋음","g-good","var(--good)"]:s>=60?["보통","g-mid","var(--mid)"]:["개선 필요","g-bad","var(--bad)"];
+
+function render(r,opt){
+  const res=$("#result");res.style.display="block";
+  const [gl,,gc]=gradeOf(r.total);
+  const ring=$("#ring");ring.style.setProperty("--p",r.total);ring.style.setProperty("--c",gc);
+  $("#total").textContent=r.total;
+  const sorted=[...r.list].sort((a,b)=>a.score-b.score);
+  $("#oneline").textContent=sorted[0].score<80?`“${sorted[0].short}”`:"“전반적으로 잘 정리된 디자인이에요”";
+  $("#meta").innerHTML=`${state.isSample?'<span class="tag">샘플 데이터</span> ':""}${escapeHtml(state.label)} · ${opt.type==="logo"?"로고":"패키지"} · ${INDUSTRY[opt.industry].name} · ${CHANNEL[opt.channel]} · 원하는 인상 ${opt.moodsUsed.join("·")}<br>종합 ${gl} · 진단일 ${new Date().toLocaleDateString("ko-KR")}`;
+
+  // 문제 영역 표시
+  const view=$("#view"),img=state.img;const VW=Math.min(720,img.naturalWidth),VH=Math.round(VW*img.naturalHeight/img.naturalWidth);
+  view.width=VW;view.height=VH;const v=view.getContext("2d");v.fillStyle="#fff";v.fillRect(0,0,VW,VH);v.drawImage(img,0,0,VW,VH);
+  const leg=$("#legend");leg.innerHTML="";
+  const colors={contrast:"#d63a2f",blur:"#e0893a"};
+  const text={contrast:"대비가 약해 잘 안 보이는 영역",blur:"작은 크기에서 뭉개지는 영역"};
+  if(!r.regions.length){leg.innerHTML='<li><i style="background:var(--good)">✓</i>눈에 띄게 문제인 영역은 찾지 못했어요</li>';}
+  r.regions.forEach((g,k)=>{
+    const x=g.x*VW,y=g.y*VH,w=g.w*VW,h=g.h*VH,lw=Math.max(3,VW/180);
+    v.lineWidth=lw;v.strokeStyle=colors[g.type];v.setLineDash([lw*3,lw*2]);v.strokeRect(x+lw/2,y+lw/2,w-lw,h-lw);v.setLineDash([]);
+    const rad=Math.max(12,VW/40);v.fillStyle=colors[g.type];v.beginPath();v.arc(x+rad,y+rad,rad,0,Math.PI*2);v.fill();
+    v.fillStyle="#fff";v.font=`800 ${rad*1.1}px sans-serif`;v.textAlign="center";v.textBaseline="middle";v.fillText(k+1,x+rad,y+rad+1);
+    leg.insertAdjacentHTML("beforeend",`<li><i style="background:${colors[g.type]}">${k+1}</i>${text[g.type]}</li>`);
+  });
+
+  // 막대 점수
+  $("#bars").innerHTML=r.list.map(it=>{const[l,cls,c]=gradeOf(it.score);
+    return `<div class="bar-row"><div class="top"><b>${it.name}<span class="grade ${cls}">${l}</span></b><span>${it.score}점</span></div>
+    <div class="bar" role="img" aria-label="${it.name} ${it.score}점"><div style="width:${it.score}%;background:${c}"></div></div>
+    <div class="why">${escapeHtml(it.metric)}</div></div>`;}).join("");
+
+  // 개선 카드 3개
+  $("#fixes").innerHTML=sorted.slice(0,3).map((it,k)=>{
+    const ok=it.score>=80;
+    let extra="";
+    if(it===r.items.fit&&!ok)extra=`<div class="swatches" aria-label="추천 색 예시">${it.swatches.map(s=>`<span style="background:${s}" title="${s}"></span>`).join("")}</div>`;
+    if(it===r.items.consist)extra=`<div class="swatches" aria-label="사용 중인 주요 색">${it.colors.map(s=>`<span style="background:${s}" title="${s}"></span>`).join("")}</div>`;
+    return `<article class="fix"><div class="rank">우선순위 ${k+1} · ${it.name} ${it.score}점</div>
+      <h4>${ok?"잘하고 있어요 — "+it.good:it.problem}</h4>
+      <dl><dt>왜 문제인가요</dt><dd>${ok?"큰 문제는 없어요. 리뉴얼 때도 이 장점은 유지하세요.":escapeHtml(it.reason)}</dd>
+      <dt>${ok?"더 다듬는다면":"이렇게 고쳐 보세요"}</dt><dd>${escapeHtml(it.fix)}${extra}</dd></dl></article>`;}).join("");
+
+  // 미리보기
+  const pv=$("#previews");pv.innerHTML="";
+  const mk=(w,cap,gray)=>{const c=document.createElement("canvas");const h=Math.round(w*img.naturalHeight/img.naturalWidth);
+    c.width=w;c.height=h;c.style.width=w+"px";c.style.height=h+"px";const x=c.getContext("2d");x.imageSmoothingQuality="high";
+    if(gray)x.filter="grayscale(1)";x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);
+    const f=document.createElement("figure");f.appendChild(c);const fc=document.createElement("figcaption");fc.textContent=cap;f.appendChild(fc);pv.appendChild(f);};
+  mk(r.smallW,`실제 작은 크기 (${r.smallW}px)`,false);
+  mk(Math.min(160,r.smallW*2),"조금 큰 썸네일",false);
+  mk(160,"흑백으로 볼 때 (명암만)",true);
+
+  res.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ===================== 저장·복사 ===================== */
+$("#pdf").addEventListener("click",()=>{toast("인쇄 창에서 ‘PDF로 저장’을 선택하세요");setTimeout(()=>window.print(),400);});
+$("#again").addEventListener("click",()=>{window.scrollTo({top:0,behavior:"smooth"});});
+$("#copy").addEventListener("click",async()=>{
+  const r=state.result;if(!r)return;
+  const sorted=[...r.list].sort((a,b)=>a.score-b.score).slice(0,3);
+  const t=[
+    "[브랜드 청진기 진단 요약]",
+    `대상: ${state.label}${state.isSample?" (샘플 데이터)":""}`,
+    `${$("#meta").textContent.replace(/^샘플 데이터\s*/,"")}`,
+    `종합 점수: ${r.total}점 — ${$("#oneline").textContent}`,
+    "",
+    "■ 항목별 점수",
+    ...r.list.map(it=>`- ${it.name}: ${it.score}점 (${gradeOf(it.score)[0]}) · ${it.metric}`),
+    "",
+    "■ 개선 우선순위",
+    ...sorted.map((it,k)=>it.score>=80?`${k+1}. ${it.name}: ${it.good}`:`${k+1}. ${it.name}: ${it.problem}\n   - 이유: ${it.reason}\n   - 고칠 방법: ${it.fix}`),
+    "",
+    "※ 규칙 기반 자동 진단(참고용)이며 전문 디자이너 검토를 대신하지 않습니다."
+  ].join("\n");
+  try{await navigator.clipboard.writeText(t);toast("상담용 요약을 복사했어요. 메신저나 메일에 붙여 넣으세요");}
+  catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast("상담용 요약을 복사했어요");}catch(_){toast("복사에 실패했어요");}ta.remove();}
+});
+
+/* ===================== 샘플 데이터 (가상 브랜드) ===================== */
+function makeSample(kind){
+  const c=document.createElement("canvas"),x=c.getContext("2d");
+  if(kind==="pkg"){ // 문제 많은 예시: 낮은 대비, 많은 색, 작은 글자
+    c.width=600;c.height=800;x.fillStyle="#f3ead7";x.fillRect(0,0,600,800);
+    const dots=[["#e74c3c",90,120,46],["#27ae60",510,140,40],["#8e44ad",470,640,52],["#3498db",110,660,44],["#f39c12",300,90,30],["#e84393",520,400,26],["#00b894",80,420,28]];
+    dots.forEach(([col,cx_,cy,r])=>{x.fillStyle=col;x.beginPath();x.arc(cx_,cy,r,0,Math.PI*2);x.fill();});
+    x.textAlign="center";
+    x.fillStyle="#f0d78c";x.font="300 84px sans-serif";x.fillText("햇살농원",300,330);
+    x.fillStyle="#e9c2a6";x.font="300 64px sans-serif";x.fillText("사과즙",300,420);
+    x.fillStyle="#cfc4ab";x.font="16px sans-serif";
+    x.fillText("100% 국산 사과 · 무첨가 · 착즙 원액",300,500);x.fillText("경북 의성 · 1,000ml · 냉장보관",300,526);
+    x.strokeStyle="#d9c9a3";x.lineWidth=1;for(let i=0;i<6;i++){x.beginPath();x.moveTo(140,560+i*8);x.lineTo(460,560+i*8);x.stroke();}
+    x.fillStyle="#c9a227";x.font="12px sans-serif";x.fillText("※ 샘플 데이터 · 가상 브랜드",300,770);
+  }else{ // 비교적 잘된 예시
+    c.width=640;c.height=320;x.fillStyle="#ffffff";x.fillRect(0,0,640,320);
+    x.fillStyle="#1b2f5b";x.beginPath();x.roundRect?x.roundRect(70,90,140,140,28):x.rect(70,90,140,140);x.fill();
+    x.fillStyle="#ffffff";x.font="900 96px sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText("G",140,165);
+    x.fillStyle="#e0893a";x.beginPath();x.arc(196,104,16,0,Math.PI*2);x.fill();
+    x.textAlign="left";x.fillStyle="#1b2f5b";x.font="900 64px sans-serif";x.fillText("가온테크",240,150);
+    x.font="800 34px sans-serif";x.fillStyle="#1b2f5b";x.fillText("GAON TECH",244,212);
+  }
+  return c.toDataURL("image/png");
+}
+
+/* ===================== 기타 ===================== */
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2600);}
+</script>
+</body>
+</html>
